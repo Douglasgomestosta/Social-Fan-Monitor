@@ -1,0 +1,105 @@
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<title>Social Fan Status</title>
+</head>
+<body style="background-color:#212529;">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Tenth navbar example">
+        <div class="container-fluid">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample08" aria-controls="navbarsExample08" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+    
+          <div class="collapse navbar-collapse justify-content-md-center" id="navbarsExample08" style="color: #edb3b3;">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <img src="https://socialfan.app/estatico/imagens/Logos/socialfan_animated_veryslow.gif">
+              </li>
+              
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+
+<center id="loading_icon"><div class="spinner-border" role="status" style="color:white;width: 3rem;height: 3rem;font-size: 2rem;"></div></center>
+
+<div class="accordion accordion-flush" id="list_services">
+
+</div>
+
+
+
+
+<script>
+get_data();
+setInterval(get_data,60000);//re-check every 60 seconds
+async function get_data(){
+document.getElementById('loading_icon').style.display = '';
+document.getElementById('list_services').innerHTML = '';
+var result = await fetch('../api/get_data', {    
+method: 'POST',
+headers: {
+'Accept': 'application/json',
+'Content-Type': 'application/json'
+},
+body:'{}'
+})
+document.getElementById('loading_icon').style.display = 'none';
+var json = await result.json();
+console.log(json);
+for await (const item of json){
+var id = Math.floor(Math.random() * 10000);
+var newDiv = document.createElement("div");
+var offline = item.services.filter(function(data){return data.status == 0;});
+var online = item.services.filter(function(data){return data.status == 1;});
+
+if(offline.length == item.services.length){
+var icon_show = `<div style="background-color:red; width:20px; height:20px;border-radius:20px;margin-right: 5px;"></div>`;
+}else{
+if(online.length == item.services.length)
+{
+var icon_show = `<div style="background-color:green; width:20px; height:20px;border-radius:20px;margin-right: 5px;"></div>`;
+}else{
+var icon_show = `<div style="background-color:yellow; width:20px; height:20px;border-radius:20px;margin-right: 5px;"></div>`;
+}
+}
+newDiv.innerHTML = `
+<div class="accordion-item">
+<h2 class="accordion-header">
+<button style="padding-left: 0.9rem;" class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse${id}" aria-expanded="false" aria-controls="flush-collapseOne">
+${icon_show}${item.name}
+</button>
+</h2>
+<div id="flush-collapse${id}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+<div class="accordion-body">
+</div>
+</div>
+</div>`
+
+for await (const item_urls of item.services){
+var newDiv_inside = document.createElement("div");
+switch(item_urls.status){
+case 0:
+var status_icon = `<div style="background-color:red; width:20px; height:20px;border-radius:20px;margin-right: 5px;display: inline-block;"></div>`;
+break;
+case 1:
+var status_icon = `<div style="background-color:green; width:20px; height:20px;border-radius:20px;margin-right: 5px;display: inline-block;"></div>`;
+break;
+default:
+var status_icon = `<div style="background-color:yellow; width:20px; height:20px;border-radius:20px;margin-right: 5px;display: inline-block;"></div>`;
+}
+newDiv_inside.innerHTML = `${status_icon} <h6 style="display: inline-block;">${item_urls.name}</h6>`;
+newDiv.getElementsByClassName('accordion-body')[0].appendChild(newDiv_inside);
+}
+
+document.getElementById('list_services').appendChild(newDiv);  
+
+}
+
+}
+</script>
+
+</body>
+</html>

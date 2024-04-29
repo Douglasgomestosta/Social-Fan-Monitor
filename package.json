@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@fastify/static": "^7.0.3",
+    "fastify": "^4.26.2",
+    "node-fetch": "^2.7.0"
+  }
+}

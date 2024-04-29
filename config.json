@@ -1,0 +1,92 @@
+{
+"http_port":3030,
+"remote_notification":{
+"url":"http://10.0.0.109:9596",
+"key":"**key_here***"
+},
+"services":[
+    {
+        "service_name":"First service working",
+        "intervals":60,
+        "notification":true,
+        "alarm":true,
+        "urls":[
+        {
+        "name":"this service is working :)",
+        "url":"https://api.socialfan.app/alldone",
+        "request_options":{
+        "method":"GET",
+        "headers":{
+        "Accept":"application/json",
+        "Content-Type":"application/json"
+        }
+        },
+        "return":"All work!!!",
+        "notification":false,
+        "alarm":false
+        }
+        ]
+        
+    },
+    {
+        "service_name":"second service partial degraded",
+        "intervals":60,
+        "notification":true,
+        "alarm":true,
+        "urls":[
+        {
+        "name":"this service is working too!",
+        "url":"https://api.socialfan.app/alldone",
+        "request_options":{
+        "method":"GET",
+        "headers":{
+        "Accept":"application/json",
+        "Content-Type":"application/json"
+        }
+        },
+        "return":"All work!!!",
+        "notification":false,
+        "alarm":false
+        },
+        {
+        "name":"this service is not working :(",
+        "url":"https://akhyfhpi.socialfan.app/alldone",
+        "request_options":{
+        "method":"GET",
+        "headers":{
+        "Accept":"application/json",
+        "Content-Type":"application/json"
+        }
+        },
+        "return":"All work!!!",
+        "notification":false,
+        "alarm":false
+        }
+        ]
+        
+},
+{
+    "service_name":"Offline",
+    "intervals":60,
+    "notification":true,
+    "alarm":false,
+    "urls":[
+    {
+    "name":"offline :(",
+    "url":"https://apisad2saf.socialfan.app/alldone",
+    "request_options":{
+    "method":"GET",
+    "headers":{
+    "Accept":"application/json",
+    "Content-Type":"application/json"
+    }
+    },
+    "return":"All work!!!",
+    "notification":false,
+    "alarm":false
+    }
+    ]
+    
+}
+]
+}
