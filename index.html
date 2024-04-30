@@ -5,6 +5,28 @@
 <title>Social Fan Status</title>
 </head>
 <body style="background-color:#212529;">
+
+
+
+<!---modal logs-->
+<div class="modal fade" id="modal_logs" tabindex="-1" aria-labelledby="modal_logs" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="name_service_modal_logs">xxx</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="body_modal_logs">
+        ...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!---end modal logs-->
+
+<div style="min-height:100vh;">
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Tenth navbar example">
         <div class="container-fluid">
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample08" aria-controls="navbarsExample08" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,7 +51,19 @@
 
 </div>
 
+</div>
 
+
+<div class="container" style="background-color: white;border-radius: 10px;">
+  <footer class="py-3 my-4">
+
+    <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+      <li class="nav-item"><a href="https://github.com/Douglasgomestosta/Social-Fan-Monitor" target="_blank" class="nav-link px-2 text-muted">Github</a></li>
+      <li class="nav-item"><a href="https://socialfan.app/perfil/SocialFanPT-BR" target="_blank" class="nav-link px-2 text-muted">Follow us on Social Fan</a></li>
+    </ul>
+    <p class="text-center text-muted">Made with <svg xmlns="http://www.w3.org/2000/svg" color="red" width="16" height="16" fill="currentColor" class="bi bi-heart-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/></svg> by Social Fan</p>
+  </footer>
+</div>
 
 
 <script>
@@ -73,7 +107,7 @@ ${icon_show}${item.name}
 </button>
 </h2>
 <div id="flush-collapse${id}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-<div class="accordion-body">
+<div class="accordion-body" style="padding-bottom: 0.5rem;">
 </div>
 </div>
 </div>`
@@ -93,10 +127,72 @@ var status_icon = `<div style="background-color:yellow; width:20px; height:20px;
 newDiv_inside.innerHTML = `${status_icon} <h6 style="display: inline-block;">${item_urls.name}</h6>`;
 newDiv.getElementsByClassName('accordion-body')[0].appendChild(newDiv_inside);
 }
+var log_button = document.createElement("button");
+log_button.className = 'btn btn-outline-primary btn-sm';
+log_button.innerHTML = 'Logs';
+log_button.style.marginTop = '0.5rem';
+log_button.onclick = function() { open_log(item.name); }
+
+newDiv.getElementsByClassName('accordion-body')[0].appendChild(log_button);
 
 document.getElementById('list_services').appendChild(newDiv);  
 
 }
+
+}
+
+async function open_log(name_service){
+document.getElementById('name_service_modal_logs').innerHTML = name_service;
+new bootstrap.Modal(document.getElementById('modal_logs')).show();
+document.getElementById('body_modal_logs').innerHTML = `<center><div class="spinner-border text-primary" role="status"></div></center>`;
+var result = await fetch('../api/get_log_data', {    
+method: 'POST',
+headers: {
+'Accept': 'application/json',
+'Content-Type': 'application/json'
+},
+body:JSON.stringify({name:name_service})
+})
+var json = await result.json();
+console.log(json);
+if(json.length == 0)
+{
+document.getElementById('body_modal_logs').innerHTML = `
+<center>
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" color="black" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">  <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>  <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>
+<h5>There are no logs for this service yet.</h5>
+</center>
+`;
+return;
+}
+document.getElementById('body_modal_logs').innerHTML = '';
+var list = document.createElement("div");
+list.innerHTML = `<ol class="list-group list-group-numbered"></ol>`;
+const option = {
+    year: 'numeric',
+    month: ('long' || 'short' || 'numeric'),
+    weekday: ('long' || 'short'),
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric'
+}
+
+for await (const item of json){
+var log_item = document.createElement("li");
+log_item.className = 'list-group-item d-flex justify-content-between align-items-start';
+log_item.innerHTML = `
+<div class="ms-2 me-auto">
+<div class="fw-bold">${new Date(parseInt(item.date)).toLocaleDateString(undefined,option)}</div>
+${item.text}
+</div>
+<span class="badge text-bg-primary rounded-pill">${item.status}</span>`;
+list.getElementsByClassName('list-group')[0].appendChild(log_item);
+};
+
+
+document.getElementById('body_modal_logs').appendChild(list);  
+
 
 }
 </script>

@@ -1,6 +1,9 @@
 var fetch = require('node-fetch');
 const child_process = require("child_process");
 let fs = require('fs');
+const sqlite3 = require('sqlite3');
+db = new sqlite3.Database(`database`);
+db.run('CREATE TABLE IF NOT EXISTS `logs` (`name_service` TEXT NOT NULL,`date` TEXT NOT NULL , `text` TEXT NOT NULL, `status` TEXT NOT NULL );');
 const app = require('fastify')({logger: false});
 const os = require("os"); 
 var file = fs.readFileSync('./config.json');
@@ -20,6 +23,10 @@ process.stdout.write(` #####    #####    #####    ######   #####   ###          
 
 app.post('/api/get_data', async function (req, reply) {
 reply.send(await get_data_api());
+})
+
+app.post('/api/get_log_data', async function (req, reply) {
+reply.send(await get_log_data(req.body));
 })
 
 app.get('/alldone', function (req, reply) {reply.send('yes')});
@@ -74,9 +81,17 @@ console.log(results);
 if(results.status == 200 || results.text == item_urls.return)
 {//successful request
 console.log(`\x1b[32msuccessful request at url ${item_urls.url}`);
+if(item_urls.status == 0)
+{
+save_log(item.service_name,`url status "${item_urls.name}" changed from offline to online`,results.status);
+}
 config.services[array_position].urls[array_position_url].status = 1;
 }else{
 console.log(`\x1b[31mfailed request at url ${item_urls.url}`);
+if(item_urls.status !== 0)
+{
+save_log(item.service_name,`url status "${item_urls.name}" changed from online to offline`,results.status);
+}
 config.services[array_position].urls[array_position_url].status = 0;
 if(item_urls.notification)
 {//send notification about this issue
@@ -123,6 +138,9 @@ running_test = false;//the function has ben finished...
 
 async function send_request(url,send){
 try{
+const controller = new AbortController()
+const timeoutId = setTimeout(() => controller.abort(), 30000)
+send.signal = controller.signal;
 var result = await fetch(url, send)
 var result_body = await result.text();
 return {status:result.status,text:result_body};
@@ -219,3 +237,39 @@ data.push(data_insert);
 }
 return data;
 }
+async function save_log(service_name,text,status){
+try{
+var stmt = db.prepare("INSERT INTO `logs` (`name_service`,`date`,`text`,`status`) VALUES (?,'" + new Date().getTime() + "', ?,?)");
+stmt.run(service_name,text,status);
+stmt.finalize();
+}catch(err){console.log(err);}
+}
+
+async function get_log_data(json){
+try{
+if(json.name == undefined){return [];}
+return new Promise((resolve, reject) => {
+db.all('select date,text,status from `logs` where `name_service` = ? ORDER BY `rowid` DESC limit 30',[json.name],(err, row)=>{
+resolve(row);
+})
+});
+}catch(err){console.log(err);return '';}
+}
+
+//garbage collector
+setInterval(delete_old, 86400000);//run the garbage collector every 24 hours
+setTimeout(function(){delete_old();}, 20000);//run the garbage collector 20 seconds after start
+async function delete_old(){
+try{
+db.get("SELECT count(*) count FROM logs;", (err, row) => {
+var remove = row.count - 1000;
+if(remove > 0)
+{
+db.each("SELECT rowid AS id from `logs` ORDER BY `id` ASC limit " + remove + ";", (err, row) => {
+db.run('DELETE FROM logs WHERE `rowid` = ' + row.id);
+});
+}
+});
+}catch(err){console.log(err);}
+}
+//end garbage collector
