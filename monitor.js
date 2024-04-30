@@ -1,9 +1,16 @@
+/*!
+* Social Fan Monitor
+* Made by Social Fan Team
+* https://github.com/Douglasgomestosta/Social-Fan-Monitor
+* @license MIT
+*/
+
 var fetch = require('node-fetch');
 const child_process = require("child_process");
 let fs = require('fs');
 const sqlite3 = require('sqlite3');
 db = new sqlite3.Database(`database`);
-db.run('CREATE TABLE IF NOT EXISTS `logs` (`name_service` TEXT NOT NULL,`date` TEXT NOT NULL , `text` TEXT NOT NULL, `status` TEXT NOT NULL );');
+db.run('CREATE TABLE IF NOT EXISTS `logs` (`name_service` TEXT NOT NULL,`date` INTEGER NOT NULL , `text` TEXT NOT NULL, `status` INTEGER NOT NULL );');
 const app = require('fastify')({logger: false});
 const os = require("os"); 
 var file = fs.readFileSync('./config.json');
