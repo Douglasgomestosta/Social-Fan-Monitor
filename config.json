@@ -1,5 +1,11 @@
 {
 "http_port":3030,
+"uptime":{
+"day":true,
+"week":true,
+"month":true,
+"year":true
+},
 "remote_notification":{
 "url":"http://10.0.0.109:9596",
 "key":"**key_here***"
@@ -68,7 +74,7 @@
 {
     "service_name":"Offline",
     "intervals":60,
-    "notification":true,
+    "notification":false,
     "alarm":false,
     "urls":[
     {

@@ -72,5 +72,5 @@ resolve(stdout);
 }
 
 async function send_notification(title,text){
-child_process.exec(`notify-send -u critical "${title}" "${text}"`, (err, stdout, stderr) => {console.log(stderr);});
+child_process.exec(`XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send -u critical "${title}" "${text}"`, (err, stdout, stderr) => {console.log(stderr);});
 }
