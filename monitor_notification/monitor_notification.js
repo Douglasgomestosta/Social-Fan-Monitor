@@ -1,3 +1,11 @@
+/*!
+* Social Fan Monitor
+* Made by Social Fan Team
+* https://github.com/Douglasgomestosta/Social-Fan-Monitor
+* @license MIT
+*/
+
+//This script works well on Linux with gnome interface
 const child_process = require("child_process");
 const http = require('http');
 let fs = require('fs');
@@ -72,5 +80,25 @@ resolve(stdout);
 }
 
 async function send_notification(title,text){
+if(await is_muted())
+{
 child_process.exec(`XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send -u critical "${title}" "${text}"`, (err, stdout, stderr) => {console.log(stderr);});
+}else{
+console.log("the notification system is muted!");
+}
+}
+
+
+async function is_muted(){
+return new Promise((resolve, reject) => {//view if notifications is muted
+child_process.exec(`gsettings get org.gnome.desktop.notifications show-banners`, (err, stdout, stderr) => {
+if(stdout.includes("true"))
+{
+resolve(true);
+}else{
+resolve(false);
+}
+});
+
+});
 }

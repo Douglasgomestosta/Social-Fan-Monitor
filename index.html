@@ -42,6 +42,23 @@ transform: scale(1.05);
 
 <!---end modal logs--->
 
+<!---modal url info--->
+<div class="modal fade" id="modal_url_info" tabindex="-1" aria-labelledby="modal_logs" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">xxx</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        ...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!---end modal url info--->
+
 <div style="min-height:100vh;">
 
   <center><img class="header_logo" src="https://socialfan.app/estatico/imagens/Logos/socialfan_animated_veryslow.gif"></center>
@@ -189,6 +206,8 @@ default:
 var status_icon = `<div style="background-color:yellow; width:20px; height:20px;border-radius:20px;margin-right: 5px;display: inline-block;"></div>`;
 }
 newDiv_inside.innerHTML = `${status_icon} <h6 style="display: inline-block;">${item_urls.name}</h6>`;
+newDiv_inside.style.cursor = 'pointer';
+newDiv_inside.onclick = function(){load_url_info(item_urls.name,item_urls.status_info)};
 newDiv.getElementsByClassName('accordion-body')[0].appendChild(newDiv_inside);
 }
 
@@ -365,6 +384,29 @@ var split = value.toString().split('.');
 split[1] = split[1].slice(0,2);
 return `${split[0]}.${split[1]}`;
 }else{return `${value}.00`;}
+}
+
+async function load_url_info(name,info){
+console.log(info);
+new bootstrap.Modal(document.getElementById('modal_url_info')).show();
+document.getElementById('modal_url_info').getElementsByClassName('modal-title')[0].innerHTML = name;
+document.getElementById('modal_url_info').getElementsByClassName('modal-body')[0].innerHTML = `
+<div class="row justify-content-between">
+<div class="col-auto">
+<h6>http status: ${info.status}</h6>
+</div>
+<div class="col-auto">
+<h6>request time: ${parseInt(info.request_time)}ms</h6>
+</div>
+</div>
+
+<div class="card">
+<div class="card-body">
+${info.body}
+</div>
+</div>
+
+`;
 }
 </script>
 
