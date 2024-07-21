@@ -5,10 +5,10 @@
 * @license MIT
 */
 
-//This script works well on Linux with gnome interface
 const child_process = require("child_process");
 const http = require('http');
 let fs = require('fs');
+const notifier = require('node-notifier');
 var file = fs.readFileSync('./config.json');
 var config = JSON.parse(file);
 process.stdout.write('\x1Bc'); 
@@ -23,7 +23,6 @@ process.stdout.write(` #####    #####    #####    ######   #####   ###          
 `); 
 
 const requestListener = async function(req, res) {
-//console.log(req);
 if(req.method == "POST")
 {
 let data = '';
@@ -31,21 +30,34 @@ req.on('data', chunk => {
 data += chunk;
 })
 req.on('end', () => {
+try{
 var dados = JSON.parse(data)
 if(dados.key == config.key)
 {
-console.log("sending notification command...");
-send_notification("Social Fan Monitor",dados.text);
-}else{console.log("invalid key");}
-
-})
-
+console.log("sending notification...");
+notifier.notify(
+{
+title: 'Social Fan Monitor',
+message: dados.text,
+sound: true
+}
+);
 res.writeHead(200);
 res.end("");
+}else{
+console.log("invalid key");
+res.writeHead(502);res.end("Invalid key!");
+}
+
+}catch(err){
+res.writeHead(502);res.end("");
+}
+})
 return false;
 }else{
-res.writeHead(502);res.end("");return false;    
+res.writeHead(502);res.end("");return false;
 }
+
 };
 
 const server = http.createServer(requestListener);
@@ -76,29 +88,5 @@ console.log(stdout);
 resolve(stdout);
 // the *entire* stdout and stderr (buffered)
 });
-});
-}
-
-async function send_notification(title,text){
-if(await is_muted())
-{
-child_process.exec(`XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send -u critical "${title}" "${text}"`, (err, stdout, stderr) => {console.log(stderr);});
-}else{
-console.log("the notification system is muted!");
-}
-}
-
-
-async function is_muted(){
-return new Promise((resolve, reject) => {//view if notifications is muted
-child_process.exec(`gsettings get org.gnome.desktop.notifications show-banners`, (err, stdout, stderr) => {
-if(stdout.includes("true"))
-{
-resolve(true);
-}else{
-resolve(false);
-}
-});
-
 });
 }

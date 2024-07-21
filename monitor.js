@@ -4,7 +4,6 @@
 * https://github.com/Douglasgomestosta/Social-Fan-Monitor
 * @license MIT
 */
-
 process.stdout.write('\x1Bc'); 
 process.stdout.write(` #####    #####    #####    ######   #####   ###               #######   #####   ##  ###  
 ###  ##  ### ###  ### ###     ##    ### ###  ###               ###  ##  ### ###  ### ###  
@@ -23,6 +22,7 @@ const sqlite3 = require('sqlite3');
 db = new sqlite3.Database(`database`);
 db.run('CREATE TABLE IF NOT EXISTS `logs` (`name_service` TEXT NOT NULL,`date` INTEGER NOT NULL , `text` TEXT NOT NULL, `status` INTEGER NOT NULL );');
 db.run('CREATE TABLE IF NOT EXISTS `downtime` (`name_service` TEXT NOT NULL,`date_start` INTEGER NOT NULL , `date_end` INTEGER NULL);');
+db.run('CREATE TABLE IF NOT EXISTS `alerts` (`title` TEXT NOT NULL,`text` TEXT NOT NULL,`date` INTEGER NOT NULL , `color` INTEGER NULL);');
 const app = require('fastify')({logger: false});
 const os = require("os"); 
 var file = fs.readFileSync('./config.json');
@@ -35,6 +35,10 @@ reply.send(await get_data_api());
 
 app.post('/api/get_log_data', async function (req, reply) {
 reply.send(await get_log_data(req.body));
+})
+
+app.post('/api/get_alerts', async function (req, reply) {
+reply.send(await get_alerts());
 })
 
 app.get('/alldone', function (req, reply) {reply.send('yes')});
@@ -256,6 +260,20 @@ data.push(data_insert);
 }
 return data;
 }
+
+async function get_alerts(){
+return new Promise((resolve, reject) => {
+db.all("SELECT rowid AS id,title,text,date,color from `alerts`;", [], (err, rows) => {
+if (err) {
+throw err;
+}
+resolve(rows);    
+});
+
+});
+}
+
+
 async function save_log(service_name,text,status){
 try{
 var stmt = db.prepare("INSERT INTO `logs` (`name_service`,`date`,`text`,`status`) VALUES (?,'" + new Date().getTime() + "', ?,?)");

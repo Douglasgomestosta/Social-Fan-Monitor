@@ -3,6 +3,8 @@
     "@fastify/static": "^7.0.3",
     "fastify": "^4.26.2",
     "node-fetch": "^2.7.0",
+    "node-notifier": "^10.0.1",
+    "prompt-sync": "^4.2.0",
     "sqlite3": "^5.1.7"
   }
 }
