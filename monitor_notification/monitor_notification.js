@@ -8,6 +8,7 @@
 const child_process = require("child_process");
 const http = require('http');
 let fs = require('fs');
+const os = require("os"); 
 const notifier = require('node-notifier');
 var file = fs.readFileSync('./config.json');
 var config = JSON.parse(file);
@@ -35,6 +36,22 @@ var dados = JSON.parse(data)
 if(dados.key == config.key)
 {
 console.log("sending notification...");
+
+let osVersion = os.platform(); 
+switch(osVersion)
+{
+case "linux":
+child_process.exec(`gsettings get org.gnome.desktop.notifications show-banners`, (err, stdout, stderr) => {
+if(stdout.includes("true"))
+{
+child_process.exec(`XDG_RUNTIME_DIR=/run/user/$(id -u) notify-send -u critical "Social Fan monitor" "${dados.text}"`, (err, stdout, stderr) => {console.log(stderr);});
+}
+});
+break;
+case "android":
+child_process.exec(`termux-notification -t "Social Fan Monitor" -c "${dados.text}"`, (err, stdout, stderr) => {console.log(stderr);});
+break;
+default:
 notifier.notify(
 {
 title: 'Social Fan Monitor',
@@ -42,6 +59,10 @@ message: dados.text,
 sound: true
 }
 );
+break;
+}
+
+
 res.writeHead(200);
 res.end("");
 }else{
